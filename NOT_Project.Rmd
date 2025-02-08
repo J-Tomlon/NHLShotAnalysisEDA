@@ -1,0 +1,222 @@
+---
+title: "2021 NHL Season Shot Analysis"
+author: "Jack Tomlon"
+output:
+  word_document: default
+  pdf_document:
+    number_sections: true
+    fig_caption: true
+mainfont: Times New Roman
+fontsize: 12
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(
+	echo = TRUE,
+	message = FALSE,
+	warning = FALSE
+)
+```
+
+```{r message=FALSE, warning=FALSE, include=FALSE}
+library(dplyr)
+setwd("C:/Users/hocke/Dropbox/STA_486C/NOT_Project/NHLShotAnalysis")
+shots <- read.csv("data-raw/shots_2021.csv")
+
+shots.clean <- shots %>%
+  select(goal, teamCode, shotType, isPlayoffGame, period, team, 
+         shotDistance, shotRush, shotRebound, shootingTeamForwardsOnIce, 
+         shootingTeamDefencemenOnIce, offWing, arenaAdjustedShotDistance, 
+         xCordAdjusted, yCordAdjusted) %>%
+  mutate(teamCode = as.factor(shots$teamCode)) %>%
+  mutate(shotType = as.factor(shots$shotType)) %>%
+  mutate(isPlayoffGame = as.factor(shots$isPlayoffGame)) %>%
+  mutate(period = as.factor(shots$period)) %>%
+  mutate(team = as.factor(shots$team)) %>% 
+  mutate(shotRush = as.factor(shots$shotRush)) %>%
+  mutate(shotRebound = as.factor(shots$shotRebound)) %>%
+  mutate(shootingTeamForwardsOnIce = as.factor(shots$shootingTeamForwardsOnIce)) %>%
+  mutate(shootingTeamDefencemenOnIce = as.factor(shots$shootingTeamDefencemenOnIce)) %>%
+  mutate(offWing = as.factor(shots$offWing)) %>%
+  filter(shotType != "")
+```
+
+## Introduction
+  In this paper, we will analyze a data set that captures every ice hockey shot taken during the 2021 NHL season. This data set, sourced from Moneypuck.com, originates from the NHL’s shot collection library. Moneypuck.com is a well-regarded source for hockey analytics, providing clean, well-structured, and publicly available data sets. Using this data, we aim to explore shot locations throughout the season, assess the probability of a shot resulting in a goal based on factors such as shot type and distance, and identify any patterns, trends, or anomalies in shooting behavior. By visualizing these elements, we can gain deeper insights into player tendencies and the effectiveness of different shot types.
+
+  The data set was downloaded in a relatively clean format, with well-organized variables and thorough documentation. However, to tailor it for analysis, we selected specific variables that were most relevant to our objectives. Key variables included whether a shot resulted in a goal, the x and y coordinates of the shot (with the rink’s center at [0,0]), shot type (categorized into seven distinct types), and shot distance from the goal. To preserve the categorical nature of certain variables, they were converted into factor variables in R, ensuring proper handling during analysis. This preprocessing allowed for a more structured and efficient approach to examining shooting patterns and goal relative probabilities.
+
+
+```{r echo=FALSE, message=FALSE, warning=FALSE}
+library(knitr)
+library(dplyr)
+for.table<- shots.clean %>%
+  select(goal, 
+         teamCode,
+         shotDistance,
+         xCordAdjusted,
+         yCordAdjusted,
+         shotType) %>%
+  rename(Goal = goal, 
+         Team = teamCode, 
+         Shot_Distance = shotDistance, 
+         X_Coordinate = xCordAdjusted, 
+         Y_Coordinate = yCordAdjusted,
+         Shot_Type = shotType)
+
+kable(for.table[1:5,], caption= "2021 NHL Shots")
+```
+
+\newpage
+## Figure 1
+
+```{r Figure 1, echo=FALSE, warning=FALSE}
+library(dplyr)
+library(ggplot2)
+library(sportyR)
+
+setwd("C:/Users/hocke/Dropbox/STA_486C/NOT_Project/NHLShotAnalysis")
+shots <- read.csv("data-raw/shots_2021.csv")
+
+shots.clean <- shots %>%
+  select(goal, teamCode, shotType, isPlayoffGame, period, team, 
+         shotDistance, shotRush, shotRebound, shootingTeamForwardsOnIce, 
+         shootingTeamDefencemenOnIce, offWing, arenaAdjustedShotDistance, 
+         xCordAdjusted, yCordAdjusted) %>%
+  mutate(teamCode = as.factor(shots$teamCode)) %>%
+  mutate(shotType = as.factor(shots$shotType)) %>%
+  mutate(isPlayoffGame = as.factor(shots$isPlayoffGame)) %>%
+  mutate(period = as.factor(shots$period)) %>%
+  mutate(team = as.factor(shots$team)) %>% 
+  mutate(shotRush = as.factor(shots$shotRush)) %>%
+  mutate(shotRebound = as.factor(shots$shotRebound)) %>%
+  mutate(shootingTeamForwardsOnIce = as.factor(shots$shootingTeamForwardsOnIce)) %>%
+  mutate(shootingTeamDefencemenOnIce = as.factor(shots$shootingTeamDefencemenOnIce)) %>%
+  mutate(offWing = as.factor(shots$offWing)) %>%
+  filter(shotType != "")
+
+rink <- geom_hockey("nhl")
+
+rink.right.o.zone <- geom_hockey("nhl", "offensive_zone", )
+
+rink.right.o.zone +
+  geom_density_2d_filled(data = shots.clean,
+                         aes(x = xCordAdjusted, y = yCordAdjusted), 
+                         alpha = 0.3, 
+                         bins = 9, 
+                         show.legend = FALSE) +
+  labs(title= "2021 NHL Season Shot Density") +
+  theme(plot.title = element_text(hjust = 0.5)) +
+  scale_fill_manual(values = c("#FFFFFF00",
+                               "#D53E4F",
+                               "#F46D43",
+                               "#FDAE61",
+                               "#FEE08B",
+                               "#ABDDA4",
+                               "#66C2A5",
+                               "#3288BD",
+                               "#5E4FA2"))
+
+
+```
+
+  This figure shows the density of shots by using their x and y coordinate of where the shot was taken. The center of the ice is regarded as 0,0 and all shots were transposed to one side of the ice. A large majority of shots are taken within 10-15 feet of the net. We can also see a pattern of where the defenseman are shooting from.
+
+
+
+
+\newpage
+## Figure 2
+
+```{r Figure 2, echo=FALSE, warning=FALSE}
+library(dplyr)
+library(ggplot2)
+
+setwd("C:/Users/hocke/Dropbox/STA_486C/NOT_Project")
+shots <- read.csv("/data-raw/shots_2021.csv")
+
+shots.clean <- shots %>%
+  select(goal, teamCode, shotType, isPlayoffGame, period, team, 
+         shotDistance, shotRush, shotRebound, shootingTeamForwardsOnIce, 
+         shootingTeamDefencemenOnIce, offWing, arenaAdjustedShotDistance, 
+         xCordAdjusted, yCordAdjusted) %>%
+  mutate(teamCode = as.factor(shots$teamCode)) %>%
+  mutate(shotType = as.factor(shots$shotType)) %>%
+  mutate(isPlayoffGame = as.factor(shots$isPlayoffGame)) %>%
+  mutate(period = as.factor(shots$period)) %>%
+  mutate(team = as.factor(shots$team)) %>% 
+  mutate(shotRush = as.factor(shots$shotRush)) %>%
+  mutate(shotRebound = as.factor(shots$shotRebound)) %>%
+  mutate(shootingTeamForwardsOnIce = as.factor(shots$shootingTeamForwardsOnIce)) %>%
+  mutate(shootingTeamDefencemenOnIce = as.factor(shots$shootingTeamDefencemenOnIce)) %>%
+  mutate(offWing = as.factor(shots$offWing)) %>%
+  filter(shotType != "")
+
+##############################################################################
+shots.prob <- shots.clean %>%
+  mutate(distance_bin = cut(shotDistance, breaks = seq(0, max(shotDistance, na.rm=TRUE), by = 5), 
+                            include.lowest = TRUE, labels = FALSE) * 5)
+goal_prob <- shots.prob %>%
+  group_by(distance_bin, shotType) %>%
+  summarise(goal_rate = mean(goal), shots = n(), .groups = "drop")
+
+ggplot(goal_prob, aes(x = distance_bin, y = goal_rate, color = shotType, group = shotType)) +
+  geom_line(size = 1) +
+  geom_point() +
+  labs(x = "Distance (ft)", y = "Goal Probability", 
+       title = "Relative Probability of a Shot Becoming a Goal by Distance and Shot Type", 
+       subtitle = "2021 Season",
+       color = "Shot Type") +
+  theme_minimal()
+
+
+
+```
+
+  The graph above shows the relative probability of a shot becoming a goal based on the distance the shot was taken from and the type of shot produced. 
+
+
+\newpage
+## Chi-Square Test
+
+Do goal rates differ significantly between shot types given a 
+significance level of $\alpha = 0.5$.
+
+Null hypothesis $\ H_0$: Shot Type and goal are not related in the population; The proportions of goal are the same for different values of Shot Type.
+
+Alternative hypothesis $\ H_a$: Shot Type and goal are related in the population; The proportions of goal are not the same for different values of Shot Type
+
+Chi Squared: $\ χ2=∑\frac{E(O−E)}{2}$
+
+```{r echo=FALSE, message=FALSE, warning=FALSE}
+library(dplyr)
+
+setwd("C:/Users/hocke/Dropbox/STA_486C/NOT_Project")
+
+shots <- read.csv("shots_2021.csv")
+
+shot.types.list = c("BACK","DEFL","SLAP","SNAP","TIP","WRAP","WRIST")
+
+shots.stats <- shots %>%
+  select(goal, shotType) %>%
+  mutate(shotType = as.factor(shots$shotType)) %>%
+  filter(shotType != "")
+
+shots.stats$shotType <- factor(shots.stats$shotType, levels = shot.types.list)
+
+shot.goal.table <- table(shots.stats$shotType, shots.stats$goal)
+
+chisq.test(shot.goal.table)
+```
+
+  After testing we can confidently reject the null hypothesis with a p-value of 2.2e-16 < $\alpha = 0.5$, the proportions of goal are not the same for different shot types.
+
+## Conclusion
+
+  The highest concentration of shots occurs around the net and slot area, aligning with expected offensive strategies. Teams at all levels in ice hockey aim to generate high-danger scoring chances from close range. Generally, the closer a shot is taken to the net, the higher its relative probability of resulting in a goal. However, events like tips and deflections can significantly increase the relative probability of shots taken from farther distances, such as a defenseman shooting from the blue line. It was also determined that whether or not the shot becomes a goal is effected by the type of shot.  
+
+  Given this, any shot taken from beyond 30 feet or by a defenseman should ideally be contested by teammates to create a deflection or position themselves for a rebound. Overall, these graphs effectively highlight key trends in NHL shooting behavior. Teams prioritize generating close-range opportunities, and shot type plays a crucial role in scoring efficiency.
+
+
+
+

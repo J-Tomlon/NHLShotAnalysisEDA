@@ -1,0 +1,11 @@
+Package: NHLShotAnalysis
+Title: EDA Analysis of NHL Shots
+Version: 0.0.0.1000
+Authors@R: 
+    person("Jack", "Tomlon", , "jmt665@nau.edu", role = c("aut", "cre"))
+Description: EDA analysis anf NHL 2021 season shots from moneypuck.com. Creates 2 visualzations. 
+License: `use_mit_license()`, `use_gpl3_license()` or friends to pick a
+    license
+Encoding: UTF-8
+Roxygen: list(markdown = TRUE)
+RoxygenNote: 7.3.2
