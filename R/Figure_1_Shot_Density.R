@@ -2,7 +2,7 @@ library(dplyr)
 library(ggplot2)
 library(sportyR)
 
-setwd("C:/Users/hocke/Dropbox/STA_486C/NOT_Project/NHLShotAnalysis")
+setwd("C:/Users/hocke/OneDrive/Desktop/NHLShotAnalysisEDA")
 shots <- read.csv("data-raw/shots_2021.csv")
 
 shots.clean <- shots %>%
@@ -26,7 +26,7 @@ rink <- geom_hockey("nhl")
 
 rink.right.o.zone <- geom_hockey("nhl", "offensive_zone", )
 
-rink.right.o.zone +
+final <- rink.right.o.zone +
   geom_density_2d_filled(data = shots.clean,
                          aes(x = xCordAdjusted, y = yCordAdjusted), 
                          alpha = 0.3, 
@@ -44,6 +44,7 @@ rink.right.o.zone +
                                "#3288BD",
                                "#5E4FA2"))
 
+final
 
-
+ggsave(final, "2021_Shot_Density.jpg")
 
