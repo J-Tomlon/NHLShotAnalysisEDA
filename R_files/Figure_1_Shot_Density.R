@@ -33,7 +33,7 @@ final <- rink.right.o.zone +
                          bins = 9, 
                          show.legend = FALSE) +
   labs(title= "2021 NHL Season Shot Density") +
-  theme(plot.title = element_text(hjust = 0.5)) +
+  theme(plot.title = element_text(hjust = 0.5, size = 20)) +
   scale_fill_manual(values = c("#FFFFFF00",
                                "#D53E4F",
                                "#F46D43",
@@ -46,5 +46,6 @@ final <- rink.right.o.zone +
 
 final
 
-ggsave(final, "2021_Shot_Density.jpg")
+ggsave("./Plots/2021_Shot_Density.jpg", plot= final, 
+       width = 10, height = 10)
 
